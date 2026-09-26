@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Visual Analytics & Insights{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem;">
+  <div>
+    <h2 style="font-size:1.75rem; font-weight:800;">Academic Data Analytics & Insights</h2>
+    <p style="color:var(--text-muted); font-size:0.9rem;">Interactive analytical models demonstrating subject mastery, department distribution, and cohort outcomes.</p>
+  </div>
+  <a href="{{ url_for('export_csv') }}" class="btn-primary" target="_blank">
+    <span>📥</span>
+    <span>Export Raw Data (CSV)</span>
+  </a>
+</div>
+
+<!-- Analytics Highlights Strip -->
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-info">
+      <h4>Top Performing Course</h4>
+      <p class="kpi-num" style="font-size:1.35rem; color:var(--emerald);">Python (CS101)</p>
+      <p class="kpi-sub">Mean Score: 92.4%</p>
+    </div>
+    <div class="kpi-icon-box">🏆</div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-info">
+      <h4>Database Queries</h4>
+      <p class="kpi-num" style="font-size:1.35rem; color:var(--cyan);">Aggregate Views</p>
+      <p class="kpi-sub">Real-Time Sync</p>
+    </div>
+    <div class="kpi-icon-box">⚡</div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-info">
+      <h4>Statistical Outliers</h4>
+      <p class="kpi-num" style="font-size:1.35rem; color:var(--amber);">1 Student</p>
+      <p class="kpi-sub">Attendance &lt; 75% Threshold</p>
+    </div>
+    <div class="kpi-icon-box">⚠️</div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-info">
+      <h4>Data Visualizer Engine</h4>
+      <p class="kpi-num" style="font-size:1.35rem; color:var(--purple);">Chart.js 4</p>
+      <p class="kpi-sub">Interactive Canvas</p>
+    </div>
+    <div class="kpi-icon-box">📈</div>
+  </div>
+</div>
+
+<!-- 4 Charts Grid -->
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap:1.5rem; margin-bottom:2rem;">
+  
+  <!-- Chart 1: Grade Curve -->
+  <div class="card-panel" style="margin-bottom:0;">
+    <div class="panel-header">
+      <h3>Grade Distribution Curve</h3>
+      <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-dim);">Categorical Frequency</span>
+    </div>
+    <div style="padding:1.5rem;">
+      <canvas id="gradeDistributionChart" style="max-height:280px;"></canvas>
+    </div>
+  </div>
+
+  <!-- Chart 2: Subject-wise Averages -->
+  <div class="card-panel" style="margin-bottom:0;">
+    <div class="panel-header">
+      <h3>Subject-Wise Mean Performance (Out of 100)</h3>
+      <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-dim);">Course Benchmark</span>
+    </div>
+    <div style="padding:1.5rem;">
+      <canvas id="subjectAverageChart" style="max-height:280px;"></canvas>
+    </div>
+  </div>
+
+  <!-- Chart 3: Department Enrollment -->
+  <div class="card-panel" style="margin-bottom:0;">
+    <div class="panel-header">
+      <h3>Department Enrollment Share</h3>
+      <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-dim);">Cohort Ratio</span>
+    </div>
+    <div style="padding:1.5rem;">
+      <canvas id="deptDistributionChart" style="max-height:280px;"></canvas>
+    </div>
+  </div>
+
+  <!-- Chart 4: Pass vs Fail Ratio -->
+  <div class="card-panel" style="margin-bottom:0;">
+    <div class="panel-header">
+      <h3>Overall Pass vs Fail Ratio</h3>
+      <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-dim);">Outcome Classification</span>
+    </div>
+    <div style="padding:1.5rem;">
+      <canvas id="passFailChart" style="max-height:280px;"></canvas>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

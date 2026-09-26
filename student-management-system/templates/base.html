@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Student Management System{% endblock %} | S. Vethavalli</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+
+  <!-- Google Fonts & Chart.js -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Core Stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+  <div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+      <div>
+        <div class="brand-header">
+          <div class="brand-icon">🎓</div>
+          <div>
+            <h1 class="brand-name">EduTrack Pro</h1>
+            <p class="brand-sub">STUDENT MANAGEMENT</p>
+          </div>
+        </div>
+
+        <ul class="nav-menu">
+          <li class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+            <a href="{{ url_for('dashboard') }}">
+              <span>📊</span>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item {% if request.endpoint == 'students' %}active{% endif %}">
+            <a href="{{ url_for('students') }}">
+              <span>👥</span>
+              <span>Student Directory</span>
+            </a>
+          </li>
+          <li class="nav-item {% if request.endpoint == 'performance' %}active{% endif %}">
+            <a href="{{ url_for('performance') }}">
+              <span>📝</span>
+              <span>Marks & Grades</span>
+            </a>
+          </li>
+          <li class="nav-item {% if request.endpoint == 'analytics' %}active{% endif %}">
+            <a href="{{ url_for('analytics') }}">
+              <span>📈</span>
+              <span>Visual Analytics</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('export_csv') }}" target="_blank">
+              <span>📥</span>
+              <span>Export CSV Report</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <p><strong>Developed by:</strong> S. Vethavalli</p>
+        <p style="color:var(--emerald);">Python Full Stack &bull; Data Analyst</p>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <!-- Top Navigation Header -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-toggle-btn" id="mobileToggleBtn" aria-label="Toggle Navigation">☰</button>
+          <span class="db-status-badge {% if not is_mysql %}sqlite{% endif %}">
+            <span>●</span>
+            <span>Database: {{ db_status }}</span>
+          </span>
+        </div>
+
+        <div class="topbar-right">
+          <button class="theme-btn" id="themeToggleBtn" aria-label="Toggle Theme" title="Toggle Theme">☀️</button>
+          <div class="user-chip">
+            <div class="user-avatar">SV</div>
+            <span>S. Vethavalli</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Container -->
+      <main class="content-container">
+        <!-- Flash Alert Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert-box alert-{{ category }}">
+                <span>{{ message }}</span>
+                <button onclick="this.parentElement.remove()" style="background:none;border:none;color:inherit;cursor:pointer;font-weight:bold;">✕</button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  <!-- Client Script -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

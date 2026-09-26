@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem;">
+  <div>
+    <h2 style="font-size:1.75rem; font-weight:800;">Academic Operations Dashboard</h2>
+    <p style="color:var(--text-muted); font-size:0.9rem;">Overview of student enrollment, performance evaluation metrics, and attendance tracking.</p>
+  </div>
+  <div style="display:flex; gap:0.75rem;">
+    <button onclick="openModal('addStudentModal')" class="btn-primary">
+      <span>➕</span>
+      <span>Enroll Student</span>
+    </button>
+    <a href="{{ url_for('performance') }}" class="btn-secondary">
+      <span>📝</span>
+      <span>Record Marks</span>
+    </a>
+  </div>
+</div>
+
+<!-- KPI Cards Grid -->
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-info">
+      <h4>Total Enrolled Students</h4>
+      <p class="kpi-num">{{ total_students }}</p>
+      <p class="kpi-sub">Active in Current Semester</p>
+    </div>
+    <div class="kpi-icon-box">👨‍🎓</div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-info">
+      <h4>Overall Pass Rate</h4>
+      <p class="kpi-num">{{ pass_rate }}%</p>
+      <p class="kpi-sub">Across All Evaluations</p>
+    </div>
+    <div class="kpi-icon-box" style="color:var(--emerald);">📈</div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-info">
+      <h4>Average Attendance</h4>
+      <p class="kpi-num">{{ avg_attendance }}%</p>
+      <p class="kpi-sub">Minimum Requirement: 75%</p>
+    </div>
+    <div class="kpi-icon-box" style="color:var(--cyan);">🕒</div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-info">
+      <h4>Active Courses</h4>
+      <p class="kpi-num">{{ total_courses }}</p>
+      <p class="kpi-sub">Python, Web, DB & Data</p>
+    </div>
+    <div class="kpi-icon-box" style="color:var(--purple);">📚</div>
+  </div>
+</div>
+
+<!-- Charts Overview Row -->
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap:1.5rem; margin-bottom:2rem;">
+  <div class="card-panel" style="margin-bottom:0;">
+    <div class="panel-header">
+      <h3>Department Enrollment Distribution</h3>
+      <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-dim);">Live Database Query</span>
+    </div>
+    <div style="padding:1.5rem;">
+      <canvas id="deptDistributionChart" style="max-height:260px;"></canvas>
+    </div>
+  </div>
+
+  <div class="card-panel" style="margin-bottom:0;">
+    <div class="panel-header">
+      <h3>Grade Distribution (Current Semester)</h3>
+      <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-dim);">O, A+, A, B+, B, C, F</span>
+    </div>
+    <div style="padding:1.5rem;">
+      <canvas id="gradeDistributionChart" style="max-height:260px;"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Tables Grid: Top Performers & Recent Evaluations -->
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap:1.5rem;">
+  <!-- Top Performers -->
+  <div class="card-panel">
+    <div class="panel-header">
+      <h3>Top Academic Performers</h3>
+      <a href="{{ url_for('students') }}" style="color:var(--emerald); font-size:0.8rem; text-decoration:none; font-weight:600;">View All →</a>
+    </div>
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Student</th>
+            <th>Roll No</th>
+            <th>Department</th>
+            <th>Avg Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for student in top_students %}
+          <tr>
+            <td style="font-family:var(--font-mono); font-weight:bold; color:var(--emerald);">#{{ loop.index }}</td>
+            <td style="font-weight:600;">{{ student.full_name }}</td>
+            <td style="font-family:var(--font-mono); font-size:0.8rem;">{{ student.roll_no }}</td>
+            <td>{{ student.department }}</td>
+            <td>
+              <span class="badge badge-grade">{{ student.average_score }}%</span>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" style="text-align:center; color:var(--text-dim);">No performance records available.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Recent Evaluations -->
+  <div class="card-panel">
+    <div class="panel-header">
+      <h3>Recent Marks Evaluations</h3>
+      <a href="{{ url_for('performance') }}" style="color:var(--cyan); font-size:0.8rem; text-decoration:none; font-weight:600;">View All →</a>
+    </div>
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Course</th>
+            <th>Total Marks</th>
+            <th>Grade</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for mark in recent_marks %}
+          <tr>
+            <td style="font-weight:600;">{{ mark.student.full_name }}</td>
+            <td>
+              <span style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text-dim);">{{ mark.course_code }}</span>
+            </td>
+            <td style="font-family:var(--font-mono); font-weight:bold;">{{ mark.total_marks }} / 100</td>
+            <td>
+              <span class="badge badge-grade">{{ mark.grade }}</span>
+            </td>
+            <td>
+              <span class="badge {% if mark.status == 'PASS' %}badge-pass{% else %}badge-fail{% endif %}">
+                {{ mark.status }}
+              </span>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" style="text-align:center; color:var(--text-dim);">No evaluation records found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Add Student Modal (Available from Dashboard) -->
+<div class="modal-overlay" id="addStudentModal">
+  <div class="modal-box">
+    <button class="modal-close-btn" onclick="closeModal('addStudentModal')">✕</button>
+    <h3 style="font-size:1.35rem; font-weight:800; margin-bottom:0.25rem;">Enroll New Student</h3>
+    <p style="font-size:0.8rem; color:var(--text-dim); margin-bottom:1.5rem;">Add a new student profile to the relational database.</p>
+
+    <form action="{{ url_for('add_student') }}" method="POST">
+      <div class="form-grid-2">
+        <div class="form-field">
+          <label>Roll Number *</label>
+          <input type="text" name="roll_no" placeholder="e.g. 2025MCA007" required>
+        </div>
+        <div class="form-field">
+          <label>Department *</label>
+          <select name="department" required>
+            <option value="Computer Applications">Computer Applications</option>
+            <option value="Data Science">Data Science</option>
+            <option value="Information Technology">Information Technology</option>
+            <option value="Mathematics">Mathematics</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-field">
+          <label>First Name *</label>
+          <input type="text" name="first_name" placeholder="First Name" required>
+        </div>
+        <div class="form-field">
+          <label>Last Name *</label>
+          <input type="text" name="last_name" placeholder="Last Name" required>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-field">
+          <label>Email Address *</label>
+          <input type="email" name="email" placeholder="student@example.com" required>
+        </div>
+        <div class="form-field">
+          <label>Phone Number</label>
+          <input type="tel" name="phone" placeholder="+91 9876543210">
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-field">
+          <label>Semester</label>
+          <select name="semester">
+            <option value="1">Semester 1</option>
+            <option value="2">Semester 2</option>
+            <option value="3">Semester 3</option>
+            <option value="4">Semester 4</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Gender</label>
+          <select name="gender">
+            <option value="Female">Female</option>
+            <option value="Male">Male</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1rem;">
+        <button type="button" class="btn-secondary" onclick="closeModal('addStudentModal')">Cancel</button>
+        <button type="submit" class="btn-primary">Save Student</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

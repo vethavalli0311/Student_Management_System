@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}Marks & Grade Evaluation{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem;">
+  <div>
+    <h2 style="font-size:1.75rem; font-weight:800;">Academic Performance & Marks Tracker</h2>
+    <p style="color:var(--text-muted); font-size:0.9rem;">Record internal and external examination scores with automated grading and result classification.</p>
+  </div>
+  <button onclick="openModal('addMarkModal')" class="btn-primary">
+    <span>➕</span>
+    <span>Record Subject Marks</span>
+  </button>
+</div>
+
+<!-- Filter Panel -->
+<div class="card-panel">
+  <div class="panel-header">
+    <h3>Evaluation Records</h3>
+    <form method="GET" action="{{ url_for('performance') }}" class="panel-actions">
+      <select name="course" class="filter-select">
+        <option value="">All Courses</option>
+        {% for c in courses %}
+          <option value="{{ c.course_code }}" {% if selected_course == c.course_code %}selected{% endif %}>
+            {{ c.course_code }} - {{ c.course_name }}
+          </option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn-secondary">Filter</button>
+      {% if selected_course %}
+        <a href="{{ url_for('performance') }}" class="btn-secondary" style="color:var(--rose);">Reset</a>
+      {% endif %}
+    </form>
+  </div>
+
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Course</th>
+          <th>Semester</th>
+          <th>Internal (25)</th>
+          <th>External (75)</th>
+          <th>Total (100)</th>
+          <th>Grade</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for mark in marks %}
+        <tr>
+          <td>
+            <div style="font-weight:700;">{{ mark.student.full_name }}</div>
+            <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--emerald);">{{ mark.student.roll_no }}</span>
+          </td>
+          <td>
+            <div style="font-weight:600;">{{ mark.course.course_name if mark.course else mark.course_code }}</div>
+            <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-dim);">Code: {{ mark.course_code }}</span>
+          </td>
+          <td style="font-family:var(--font-mono);">Sem {{ mark.semester }}</td>
+          <td style="font-family:var(--font-mono); font-weight:600;">{{ mark.internal_marks }}</td>
+          <td style="font-family:var(--font-mono); font-weight:600;">{{ mark.external_marks }}</td>
+          <td style="font-family:var(--font-mono); font-weight:800; font-size:0.95rem; color:var(--text-main);">
+            {{ mark.total_marks }}
+          </td>
+          <td>
+            <span class="badge badge-grade">{{ mark.grade }}</span>
+          </td>
+          <td>
+            <span class="badge {% if mark.status == 'PASS' %}badge-pass{% else %}badge-fail{% endif %}">
+              {{ mark.status }}
+            </span>
+          </td>
+          <td>
+            <form action="{{ url_for('delete_mark', id=mark.id) }}" method="POST" onsubmit="return confirm('Delete this evaluation record?');">
+              <button type="submit" class="btn-action btn-delete" title="Delete Mark Record">
+                🗑️ Delete
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="9" style="text-align:center; padding:2.5rem; color:var(--text-dim);">
+            No evaluation records found matching the filter.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Record Marks Modal -->
+<div class="modal-overlay" id="addMarkModal">
+  <div class="modal-box">
+    <button class="modal-close-btn" onclick="closeModal('addMarkModal')">✕</button>
+    <h3 style="font-size:1.35rem; font-weight:800; margin-bottom:0.25rem;">Record Subject Marks</h3>
+    <p style="font-size:0.8rem; color:var(--text-dim); margin-bottom:1.5rem;">Total marks, grade, and pass/fail status are calculated automatically.</p>
+
+    <form action="{{ url_for('add_mark') }}" method="POST">
+      <div class="form-field">
+        <label>Select Student *</label>
+        <select name="student_id" required>
+          {% for s in students %}
+            <option value="{{ s.id }}">{{ s.roll_no }} - {{ s.full_name }} ({{ s.department }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-field">
+          <label>Course Subject *</label>
+          <select name="course_code" required>
+            {% for c in courses %}
+              <option value="{{ c.course_code }}">{{ c.course_code }} - {{ c.course_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Semester</label>
+          <select name="semester">
+            <option value="1">Semester 1</option>
+            <option value="2">Semester 2</option>
+            <option value="3">Semester 3</option>
+            <option value="4">Semester 4</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-field">
+          <label>Internal Score (Max 25) *</label>
+          <input type="number" step="0.5" min="0" max="25" name="internal_marks" placeholder="0 - 25" required>
+        </div>
+        <div class="form-field">
+          <label>External Score (Max 75) *</label>
+          <input type="number" step="0.5" min="0" max="75" name="external_marks" placeholder="0 - 75" required>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-input); padding:0.85rem; border-radius:var(--radius-sm); margin-bottom:1.2rem; font-size:0.75rem; color:var(--text-dim);">
+        <p><strong>Grading Scale:</strong> &ge;90: O | &ge;80: A+ | &ge;70: A | &ge;60: B+ | &ge;50: B | &ge;40: C | &lt;40: F (Fail)</p>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:0.75rem;">
+        <button type="button" class="btn-secondary" onclick="closeModal('addMarkModal')">Cancel</button>
+        <button type="submit" class="btn-primary">Compute & Save Grade</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
